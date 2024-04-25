@@ -12,8 +12,7 @@ struct CategoriesListView: View {
     @Binding var clickedCategories: Bool
     @Binding var selectionCategories: String
     @Binding var clickedHeroes: Bool
-    @State var selectedIndexCategories: Int? = nil
-    @FocusState private var categoryFocus: Bool
+    @State private var selectedIndexCategories: Int? = nil
 
     var body: some View {
         ScrollView {
@@ -25,6 +24,9 @@ struct CategoriesListView: View {
                             .foregroundColor(.green)
                         Text(key)
                         Spacer()
+                    }
+                    .onTapGesture {
+                        selectedIndexCategories = index
                     }
                     .focusable()
                     .onTapGesture(count: 2) {
@@ -56,21 +58,15 @@ struct CategoriesListView: View {
                     }
                     .padding()
                     .background(index == selectedIndexCategories ? Color.blue.opacity(0.3) : Color.clear)
-                    .onAppear {
-                        selectedIndexCategories = 0
-                    }
                 }
              
             }
+            .focusable()
             .onMoveCommand(perform: { direction in
                 selectedCategories(direction, layoutDirection: layoutDirection)
             })
             .background(Color.white)
             .cornerRadius(10)
-            .focused($categoryFocus)
-            .onAppear {
-                categoryFocus = true
-            }
         }
     }
 

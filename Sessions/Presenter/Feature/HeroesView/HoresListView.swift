@@ -16,7 +16,6 @@ struct HeroesListView: View {
     @Binding var clickedHeroes: Bool
     @Binding var selectionCategories: String
     @State private var selectedIndexHeroes: Int? = nil
-    @FocusState private var heroesFocus: Bool
     var body: some View {
         LazyVStack(alignment: .leading) {
             ForEach(Array(viewModel.selectedHeroesCategories.enumerated()), id: \.element) { index, item in
@@ -28,7 +27,9 @@ struct HeroesListView: View {
                     Spacer()
                 }
                 .focusable()
-                .focused($heroesFocus)
+                .onTapGesture {
+                    selectedIndexHeroes = index
+                }
                 .onKeyPress(.return) {
                     withAnimation(.bouncy) {
                         clickedHeroes = false
@@ -45,10 +46,6 @@ struct HeroesListView: View {
                         }
                     }
                     return .handled
-                }
-                .onAppear {
-                    heroesFocus = true
-                    selectedIndexHeroes = 0
                 }
                 .padding()
                 .background(index == selectedIndexHeroes ? Color.blue.opacity(0.3) : Color.clear)
