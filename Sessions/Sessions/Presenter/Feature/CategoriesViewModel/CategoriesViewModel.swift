@@ -64,6 +64,7 @@ class CategoriesViewModel: ObservableObject {
     }
     
     func handlerCategoriesHeroes(with categories: PrimaryAttr) {
+        selectedCategories = categoriesState.first(where: { $0.value == categories.rawValue })?.key ?? "All"
         selectedCategoriesKey = categories
         switch categories {
         case .agi:

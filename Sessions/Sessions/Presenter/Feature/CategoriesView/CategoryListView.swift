@@ -64,7 +64,6 @@ struct CategoriesListView: View {
             if let selectedIndex = selectedIndexCategories,
                let selectedKey = Array(viewModel.filteredCategories.keys).dropFirst(selectedIndex).first {
                 selectionCategories = selectedKey
-                viewModel.selectedCategories = selectedKey
                 DispatchQueue.main.async {
                     handlerSubmitCategories(key: viewModel.filteredCategories[selectedKey] ?? "")
                 }
