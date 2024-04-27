@@ -84,6 +84,9 @@ struct CategoriesListView: View {
         case .down:
             if currentIndex < viewModel.filteredCategories.count - 1 {
                 selectedIndexCategories = currentIndex + 1
+            } else {
+                categoryFocus = .inputField
+                clickedCategories = false
             }
         default:
             break

@@ -11,7 +11,7 @@ struct ChoosenListView: View {
     @EnvironmentObject var viewModel: CategoriesViewModel
     @Environment(\.layoutDirection) private var layoutDirection
     @State private var selectedIndexCategories: Int? = 0
-    @FocusState private var choosenFocus: Bool
+    @FocusState.Binding var choosenFocus: FocusedField?
     var body: some View {
         LazyVStack {
             ForEach(Array(viewModel.choosenListView.enumerated()), id: \.element) { index, item in
@@ -42,12 +42,11 @@ struct ChoosenListView: View {
             .background(.white)
             .cornerRadius(10)
             .focusable()
-//            .focused($choosenFocus)
+            .focused($choosenFocus, equals: .choosenHeroes)
             .onMoveCommand { direction in
                 selectedCategories(direction, layoutDirection: layoutDirection)
             }
             .onAppear {
-                choosenFocus = true
                 selectedIndexCategories = 0
             }
         }
@@ -60,6 +59,8 @@ struct ChoosenListView: View {
         case .up:
             if currentIndex > 0 {
                 selectedIndexCategories = currentIndex - 1
+            } else {
+                choosenFocus = .inputField
             }
         case .down:
             if currentIndex < viewModel.choosenListView.count - 1 {
@@ -69,10 +70,4 @@ struct ChoosenListView: View {
             break
         }
     }
-}
-
-
-
-#Preview {
-    ChoosenListView()
 }

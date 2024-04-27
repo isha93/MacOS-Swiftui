@@ -64,7 +64,7 @@ struct CategoriesView: View {
                     return .handled
                 })
                 .onKeyPress(.downArrow, action: {
-                    focusedField = .heroesName
+                    focusedField = clickedHeroes ? .heroesName : .choosenHeroes
                     return .handled
                 })
                 .onKeyPress(.return) {
@@ -100,7 +100,7 @@ struct CategoriesView: View {
                 .background(.white)
                 .cornerRadius(10)
                 
-                ChoosenListView()
+                ChoosenListView(choosenFocus: $focusedField)
                     .padding(.vertical)
                     .environmentObject(viewModel)
                     .overlay(alignment: .top) {
@@ -161,4 +161,5 @@ enum FocusedField {
     case categoriesName
     case inputField
     case heroesName
+    case choosenHeroes
 }

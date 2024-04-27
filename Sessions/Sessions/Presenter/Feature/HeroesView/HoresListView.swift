@@ -39,6 +39,7 @@ struct HeroesListView: View {
                         selectionNameHeroes = ""
                         selectionCategories = "Categories"
                         selectionHeroes = viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
+                        heroesFocus = .choosenHeroes
                         DispatchQueue.main.async {
                             viewModel.handlerChoosenData(
                                 heroes: viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
