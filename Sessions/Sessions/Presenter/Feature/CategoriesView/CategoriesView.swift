@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CategoriesView: View {
+    @Environment(\.layoutDirection) private var layoutDirection
     @StateObject var viewModel = CategoriesViewModel()
     @State private var selectionCategories: String = "Categories"
     @State private var selectionHeroes: DotaHeroesModelData = .init(id: 1, name: "", localizedName: "", primaryAttr: .agi, attackType: .melee, roles: [], legs: 1)
@@ -47,13 +48,25 @@ struct CategoriesView: View {
                     CategoriesListView(
                         clickedCategories: $clickedCategories,
                         selectionCategories: $selectionCategories,
-                        clickedHeroes: $clickedHeroes
+                        clickedHeroes: $clickedHeroes,
+                        categoryFocus: $focusedField
                     )
+                    .focused($focusedField, equals: .categoriesName)
                     .environmentObject(viewModel)
                 }
                 
                 TextField("What's your heroes", text: $heroes)
                 .focusable()
+                .onKeyPress(.upArrow, action: {
+                    clickedCategories = true
+                    clickedHeroes = false
+                    focusedField = .categoriesName
+                    return .handled
+                })
+                .onKeyPress(.downArrow, action: {
+                    focusedField = .heroesName
+                    return .handled
+                })
                 .onKeyPress(.return) {
                     withAnimation {
                         clickedHeroes = false
@@ -70,7 +83,7 @@ struct CategoriesView: View {
                     viewModel.handlerCategoriesHeroes(with: primaryAttr)
                     return .handled
                 }
-                .focused($focusedField, equals: .heroesName)
+                .focused($focusedField, equals: .inputField)
                 .onChange(of: heroes, { oldValue, newValue in
                     if newValue.count < textLenght && !newValue.isEmpty {
                         withAnimation {
@@ -98,7 +111,8 @@ struct CategoriesView: View {
                                     selectionHeroes: $selectionHeroes,
                                     selectionNameHeroes: $heroes,
                                     clickedHeroes: $clickedHeroes,
-                                    selectionCategories: $selectionCategories
+                                    selectionCategories: $selectionCategories, 
+                                    heroesFocus: $focusedField
                                 )
                                 .environmentObject(viewModel)
                             }
@@ -107,13 +121,17 @@ struct CategoriesView: View {
                                 CategoriesListView(
                                     clickedCategories: $clickedCategories,
                                     selectionCategories: $selectionCategories,
-                                    clickedHeroes: $clickedHeroes
+                                    clickedHeroes: $clickedHeroes,
+                                    categoryFocus: $focusedField
                                 )
                                 .environmentObject(viewModel)
                             }
                         }
                     }
             }
+        }
+        .onAppear {
+            focusedField = .categoriesName
         }
         .onChange(of: viewModel.openCategories) { _, newValue in
             if newValue {
@@ -129,7 +147,6 @@ struct CategoriesView: View {
                     clickedCategories = false
                     switchedToCategories = false
                     heroes = ""
-                    focusedField = .heroesName
                 }
             }
         }
@@ -141,5 +158,7 @@ struct CategoriesView: View {
 }
 
 enum FocusedField {
+    case categoriesName
+    case inputField
     case heroesName
 }

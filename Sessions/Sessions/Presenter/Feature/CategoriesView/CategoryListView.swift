@@ -13,7 +13,7 @@ struct CategoriesListView: View {
     @Binding var selectionCategories: String
     @Binding var clickedHeroes: Bool
     @State var selectedIndexCategories: Int? = nil
-    @FocusState private var categoryFocus: Bool
+    @FocusState.Binding var categoryFocus: FocusedField?
 
     var body: some View {
         ScrollView {
@@ -51,9 +51,9 @@ struct CategoriesListView: View {
             })
             .background(Color.white)
             .cornerRadius(10)
-            .focused($categoryFocus)
+            .focused($categoryFocus, equals: .categoriesName)
             .onAppear {
-                categoryFocus = true
+                categoryFocus = .categoriesName
             }
         }
     }
@@ -67,6 +67,7 @@ struct CategoriesListView: View {
                 DispatchQueue.main.async {
                     handlerSubmitCategories(key: viewModel.filteredCategories[selectedKey] ?? "")
                 }
+                categoryFocus = .inputField
                 clickedHeroes = true
             }
         }

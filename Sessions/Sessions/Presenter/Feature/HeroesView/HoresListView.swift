@@ -16,7 +16,7 @@ struct HeroesListView: View {
     @Binding var clickedHeroes: Bool
     @Binding var selectionCategories: String
     @State private var selectedIndexHeroes: Int? = nil
-    @FocusState private var heroesFocus: Bool
+    @FocusState.Binding var heroesFocus: FocusedField?
     var body: some View {
         LazyVStack(alignment: .leading) {
             ForEach(viewModel.searchText.isEmpty ? Array(viewModel.selectedHeroesCategories.enumerated()) : Array(viewModel.searchHeroesCategories.enumerated()) , id: \.element) { index, item in
@@ -28,7 +28,10 @@ struct HeroesListView: View {
                     Spacer()
                 }
                 .focusable()
-//                .focused($heroesFocus)
+                .onMoveCommand(perform: { direction in
+                    selectedHeroes(direction, layoutDirection: layoutDirection)
+                })
+                .focused($heroesFocus, equals: .heroesName)
                 .onKeyPress(.return) {
                     withAnimation(.bouncy) {
                         clickedHeroes = false
@@ -44,9 +47,6 @@ struct HeroesListView: View {
                     }
                     return .handled
                 }
-                .onAppear {
-                    heroesFocus = true
-                }
                 .onTapGesture {
                     selectedIndexHeroes = index
                 }
@@ -54,9 +54,10 @@ struct HeroesListView: View {
                 .background(index == selectedIndexHeroes ? Color.blue.opacity(0.3) : Color.clear)
             }
         }
-        .focusable()
-        .onMoveCommand(perform: { direction in
-            selectedHeroes(direction, layoutDirection: layoutDirection)
+        .onChange(of: heroesFocus, { oldValue, newValue in
+            if newValue == .heroesName {
+                selectedIndexHeroes = 0
+            }
         })
         .background(.white)
         .cornerRadius(10)
@@ -69,6 +70,8 @@ struct HeroesListView: View {
         case .up:
             if currentIndex > 0 {
                 selectedIndexHeroes = currentIndex - 1
+            } else {
+                heroesFocus = .inputField
             }
         case .down:
             if currentIndex < viewModel.selectedHeroesCategories.count - 1 {
