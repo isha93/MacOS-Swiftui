@@ -18,7 +18,7 @@ struct CategoriesListView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading) {
-                ForEach(Array(viewModel.categoriesState.keys.enumerated()), id: \.element) { index, key in
+                ForEach(Array(viewModel.filteredCategories.keys.enumerated()), id: \.element) { index, key in
                     HStack {
                         Circle()
                             .frame(width: 10, height: 10)
@@ -29,28 +29,12 @@ struct CategoriesListView: View {
                     .focusable()
                     .onTapGesture(count: 2) {
                         withAnimation(.bouncy) {
-                            clickedCategories = false
-                            if let selectedIndex = selectedIndexCategories,
-                               let selectedKey = Array(viewModel.categoriesState.keys).dropFirst(selectedIndex).first {
-                                selectionCategories = selectedKey
-                                DispatchQueue.main.async {
-                                    handlerSubmitCategories(key: viewModel.categoriesState[selectedKey] ?? "")
-                                }
-                                clickedHeroes = true
-                            }
+                            handleCategorySelection()
                         }
                     }
                     .onKeyPress(.return) {
                         withAnimation(.bouncy) {
-                            clickedCategories = false
-                            if let selectedIndex = selectedIndexCategories,
-                               let selectedKey = Array(viewModel.categoriesState.keys).dropFirst(selectedIndex).first {
-                                selectionCategories = selectedKey
-                                DispatchQueue.main.async {
-                                    handlerSubmitCategories(key: viewModel.categoriesState[selectedKey] ?? "")
-                                }
-                                clickedHeroes = true
-                            }
+                            handleCategorySelection()
                         }
                         return .handled
                     }
@@ -73,6 +57,21 @@ struct CategoriesListView: View {
             }
         }
     }
+    
+    func handleCategorySelection() {
+        withAnimation(.bouncy) {
+            clickedCategories = false
+            if let selectedIndex = selectedIndexCategories,
+               let selectedKey = Array(viewModel.filteredCategories.keys).dropFirst(selectedIndex).first {
+                selectionCategories = selectedKey
+                viewModel.selectedCategories = selectedKey
+                DispatchQueue.main.async {
+                    handlerSubmitCategories(key: viewModel.filteredCategories[selectedKey] ?? "")
+                }
+                clickedHeroes = true
+            }
+        }
+    }
 
     private func selectedCategories(_ direction: MoveCommandDirection, layoutDirection: LayoutDirection) {
         guard let currentIndex = selectedIndexCategories else { return }
@@ -83,7 +82,7 @@ struct CategoriesListView: View {
                 selectedIndexCategories = currentIndex - 1
             }
         case .down:
-            if currentIndex < viewModel.categoriesState.count - 1 {
+            if currentIndex < viewModel.filteredCategories.count - 1 {
                 selectedIndexCategories = currentIndex + 1
             }
         default:

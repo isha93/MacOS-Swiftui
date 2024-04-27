@@ -19,7 +19,7 @@ struct HeroesListView: View {
     @FocusState private var heroesFocus: Bool
     var body: some View {
         LazyVStack(alignment: .leading) {
-            ForEach(Array(viewModel.selectedHeroesCategories.enumerated()), id: \.element) { index, item in
+            ForEach(viewModel.searchText.isEmpty ? Array(viewModel.selectedHeroesCategories.enumerated()) : Array(viewModel.searchHeroesCategories.enumerated()) , id: \.element) { index, item in
                 HStack {
                     Circle()
                         .frame(width: 10, height: 10)
@@ -28,27 +28,27 @@ struct HeroesListView: View {
                     Spacer()
                 }
                 .focusable()
-                .focused($heroesFocus)
+//                .focused($heroesFocus)
                 .onKeyPress(.return) {
                     withAnimation(.bouncy) {
                         clickedHeroes = false
                         clickedCategories = false
                         selectionNameHeroes = ""
                         selectionCategories = "Categories"
-                        if let selectedIndex = selectedIndexHeroes {
-                            selectionHeroes = viewModel.selectedHeroesCategories[selectedIndex]
-                            DispatchQueue.main.async {
-                                viewModel.handlerChoosenData(
-                                    heroes: viewModel.selectedHeroesCategories[selectedIndex]
-                                )
-                            }
+                        selectionHeroes = viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
+                        DispatchQueue.main.async {
+                            viewModel.handlerChoosenData(
+                                heroes: viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
+                            )
                         }
                     }
                     return .handled
                 }
                 .onAppear {
                     heroesFocus = true
-                    selectedIndexHeroes = 0
+                }
+                .onTapGesture {
+                    selectedIndexHeroes = index
                 }
                 .padding()
                 .background(index == selectedIndexHeroes ? Color.blue.opacity(0.3) : Color.clear)

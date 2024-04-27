@@ -11,6 +11,7 @@ struct ChoosenListView: View {
     @EnvironmentObject var viewModel: CategoriesViewModel
     @Environment(\.layoutDirection) private var layoutDirection
     @State private var selectedIndexCategories: Int? = 0
+    @FocusState private var choosenFocus: Bool
     var body: some View {
         LazyVStack {
             ForEach(Array(viewModel.choosenListView.enumerated()), id: \.element) { index, item in
@@ -41,8 +42,13 @@ struct ChoosenListView: View {
             .background(.white)
             .cornerRadius(10)
             .focusable()
+//            .focused($choosenFocus)
             .onMoveCommand { direction in
                 selectedCategories(direction, layoutDirection: layoutDirection)
+            }
+            .onAppear {
+                choosenFocus = true
+                selectedIndexCategories = 0
             }
         }
     }

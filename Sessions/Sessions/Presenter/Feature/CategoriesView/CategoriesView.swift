@@ -17,86 +17,119 @@ struct CategoriesView: View {
     @State private var selectedIndexCategoreies: Int = 0
     @State private var textLenght: Int = 0
     @State private var switchedToCategories: Bool = false
+    @FocusState private var focusedField: FocusedField?
     var body: some View {
-        ScrollView {
-            HStack {
-                Circle()
-                    .frame(width: 10, height: 10)
-                    .foregroundColor(.green)
-                Text(selectionCategories)
-                Spacer()
-                Image(systemName: clickedCategories ? "arrowtriangle.up" : "arrowtriangle.down")
-                    .frame(width: 10, height: 10)
-                    .foregroundColor(.gray)
-            }
-            .padding()
-            .background(.white)
-            .cornerRadius(10)
-            .onTapGesture {
-                withAnimation(.bouncy) {
-                    clickedCategories.toggle()
-                    clickedHeroes = false
+        ZStack {
+            ScrollView {
+                HStack {
+                    Circle()
+                        .frame(width: 10, height: 10)
+                        .foregroundColor(.green)
+                    Text(selectionCategories)
+                    Spacer()
+                    Image(systemName: clickedCategories ? "arrowtriangle.up" : "arrowtriangle.down")
+                        .frame(width: 10, height: 10)
+                        .foregroundColor(.gray)
                 }
-            }
-            
-            if clickedCategories {
-                CategoriesListView(
-                    clickedCategories: $clickedCategories,
-                    selectionCategories: $selectionCategories,
-                    clickedHeroes: $clickedHeroes
-                )
-                .environmentObject(viewModel)
-            }
-            
-            TextField("What's your heroes", text: $heroes, onEditingChanged: { focused in
-                clickedHeroes = focused
-            })
-            .onChange(of: heroes, { oldValue, newValue in
-                if newValue.count < textLenght {
-                    withAnimation {
-                        clickedHeroes = true
-                        viewModel.openCategories = false
+                .padding()
+                .background(.white)
+                .cornerRadius(10)
+                .onTapGesture {
+                    withAnimation(.bouncy) {
+                        clickedCategories.toggle()
                         switchedToCategories = false
+                        clickedHeroes = false
+                        viewModel.handleCategoresState()
                     }
                 }
-                textLenght = newValue.count
-                viewModel.searchText = newValue
-            })
-            .textFieldStyle(.plain)
-            .padding()
-            .background(.white)
-            .cornerRadius(10)
-            .focusable()
-            
-            if clickedHeroes {
-                HeroesListView(
-                    clickedCategories: $clickedCategories,
-                    selectionHeroes: $selectionHeroes,
-                    selectionNameHeroes: $heroes,
-                    clickedHeroes: $clickedHeroes,
-                    selectionCategories: $selectionCategories
-                )
-                .environmentObject(viewModel)
+                
+                if clickedCategories {
+                    CategoriesListView(
+                        clickedCategories: $clickedCategories,
+                        selectionCategories: $selectionCategories,
+                        clickedHeroes: $clickedHeroes
+                    )
+                    .environmentObject(viewModel)
+                }
+                
+                TextField("What's your heroes", text: $heroes)
+                .focusable()
+                .onKeyPress(.return) {
+                    withAnimation {
+                        clickedHeroes = false
+                        clickedCategories = false
+                        selectionCategories = "Categories"
+                        DispatchQueue.main.async {
+                            viewModel.selectedHeroesbyName(with: heroes)
+                        }
+                    }
+                    return .handled
+                }
+                .onKeyPress(.delete) {
+                    let primaryAttr: PrimaryAttr = PrimaryAttr(rawValue: self.selectionCategories) ?? .all
+                    viewModel.handlerCategoriesHeroes(with: primaryAttr)
+                    return .handled
+                }
+                .focused($focusedField, equals: .heroesName)
+                .onChange(of: heroes, { oldValue, newValue in
+                    if newValue.count < textLenght && !newValue.isEmpty {
+                        withAnimation {
+                            clickedHeroes = true
+                            viewModel.openCategories = false
+                            switchedToCategories = false
+                        }
+                    }
+                    textLenght = newValue.count
+                    viewModel.searchText = newValue
+                })
+                .textFieldStyle(.plain)
+                .padding()
+                .background(.white)
+                .cornerRadius(10)
+                
+                ChoosenListView()
+                    .padding(.vertical)
+                    .environmentObject(viewModel)
+                    .overlay(alignment: .top) {
+                        Group {
+                            if clickedHeroes {
+                                HeroesListView(
+                                    clickedCategories: $clickedCategories,
+                                    selectionHeroes: $selectionHeroes,
+                                    selectionNameHeroes: $heroes,
+                                    clickedHeroes: $clickedHeroes,
+                                    selectionCategories: $selectionCategories
+                                )
+                                .environmentObject(viewModel)
+                            }
+                            
+                            if switchedToCategories {
+                                CategoriesListView(
+                                    clickedCategories: $clickedCategories,
+                                    selectionCategories: $selectionCategories,
+                                    clickedHeroes: $clickedHeroes
+                                )
+                                .environmentObject(viewModel)
+                            }
+                        }
+                    }
             }
-            
-            if switchedToCategories {
-                CategoriesListView(
-                    clickedCategories: $clickedCategories,
-                    selectionCategories: $selectionCategories,
-                    clickedHeroes: $clickedHeroes
-                )
-                .environmentObject(viewModel)
-            }
-            
-            ChoosenListView()
-                .padding(.vertical)
-                .environmentObject(viewModel)
         }
         .onChange(of: viewModel.openCategories) { _, newValue in
             if newValue {
                 withAnimation {
                     clickedHeroes = false
                     switchedToCategories = true
+                }
+            }
+        }
+        .onChange(of: clickedHeroes) { _, newValue in
+            if newValue {
+                withAnimation {
+                    clickedCategories = false
+                    switchedToCategories = false
+                    heroes = ""
+                    focusedField = .heroesName
                 }
             }
         }
@@ -107,3 +140,6 @@ struct CategoriesView: View {
     CategoriesView()
 }
 
+enum FocusedField {
+    case heroesName
+}

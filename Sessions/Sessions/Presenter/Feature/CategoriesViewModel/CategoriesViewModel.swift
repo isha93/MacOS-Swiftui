@@ -21,21 +21,21 @@ class CategoriesViewModel: ObservableObject {
     @Published var openCategories: Bool = false
     @Published var choosenListView: [ChoosenModelData] = []
     
+    @Published var filteredCategories: [String : String] = [:]
+    
     private var subscriptions = Set<AnyCancellable>()
     private let service: DotaHeroesServicesProtocol
     
     init(service: DotaHeroesServicesProtocol = DotaHeroesServices(networker: Networker())) {
         self.service = service
-        self.handleCategoresState()
         $searchText
             .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
             .sink(receiveValue: { [weak self] t in
-                if t.contains("@") {
+            if t.contains("@") {
                     self?.openCategories = true
+                    self?.filterCategories(with: t)
                 }
-                DispatchQueue.main.async {
-                    self?.searchCategoriesHeroes(with: t)
-                }
+                self?.searchCategoriesHeroes(with: t)
             } )
             .store(in: &subscriptions)
         Task {
@@ -44,12 +44,14 @@ class CategoriesViewModel: ObservableObject {
     }
     
     func handleCategoresState() {
-        self.categoriesState = [
+        let data = [
             "All": "all",
             "Strength": "str",
             "Agility": "agi",
             "Intelligence": "int"
         ]
+        self.categoriesState = data
+        self.filteredCategories = data
     }
     
     func getHeroes() async {
@@ -77,14 +79,38 @@ class CategoriesViewModel: ObservableObject {
     
     func searchCategoriesHeroes(with keyWord: String) {
         if !keyWord.isEmpty {
-            self.selectedHeroesCategories = self.selectedHeroesCategories.filter { $0.localizedName.range(of: keyWord, options: .caseInsensitive) != nil }
+            self.searchHeroesCategories = self.selectedHeroesCategories.filter { $0.localizedName.range(of: keyWord, options: .caseInsensitive) != nil }
         } else {
             self.handlerCategoriesHeroes(with: selectedCategoriesKey)
         }
     }
     
+    func selectedHeroesbyName(with name: String) {
+        let hero = ChoosenModelData(categories: selectedCategories, heroes: name, id: .random(in: 1...100))
+        self.choosenListView.append(hero)
+    }
+    
     func handlerChoosenData(heroes: DotaHeroesModelData) {
         let item : ChoosenModelData = ChoosenModelData(categories: selectedCategories, heroes: heroes.localizedName, id: heroes.id)
         self.choosenListView.append(item)
+    }
+    
+    func filterCategories(with keyWord: String) {
+        guard keyWord.count > 1 else {
+            filteredCategories = categoriesState
+            return
+        }
+        
+        let finalsKey = keyWord.split(separator: "@")
+        let modifiedKey = finalsKey.count > 1 ? String(finalsKey.last!).trimmingCharacters(in: .whitespacesAndNewlines) : ""
+        
+        if !modifiedKey.isEmpty {
+            let filter = categoriesState.filter { key, _ in
+                key.range(of: modifiedKey, options: .caseInsensitive) != nil
+            }
+            filteredCategories = filter
+        } else {
+            filteredCategories = categoriesState
+        }
     }
 }
