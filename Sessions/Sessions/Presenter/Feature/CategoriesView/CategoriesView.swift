@@ -55,7 +55,14 @@ struct CategoriesView: View {
                     .environmentObject(viewModel)
                 }
                 
-                TextField("What's your heroes", text: $heroes)
+                TextField("What's your heroes", text: $heroes, onEditingChanged: { onChanged in
+                    if onChanged {
+                        clickedHeroes = true
+                        clickedCategories = false
+                        let primaryAttr: PrimaryAttr = PrimaryAttr(rawValue: self.selectionCategories) ?? .all
+                        viewModel.handlerCategoriesHeroes(with: primaryAttr)
+                    }
+                })
                 .focusable()
                 .onKeyPress(.upArrow, action: {
                     clickedCategories = true
@@ -146,7 +153,6 @@ struct CategoriesView: View {
                 withAnimation {
                     clickedCategories = false
                     switchedToCategories = false
-                    heroes = ""
                 }
             }
         }

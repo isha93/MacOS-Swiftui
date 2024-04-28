@@ -58,6 +58,7 @@ class CategoriesViewModel: ObservableObject {
         do {
             let heroes = try await service.getPokemon(endPoint: .getHeroes)
             self.categories = heroes
+            self.selectedHeroesCategories = self.categories.filter({ $0.primaryAttr == .all })
         } catch {
             self.errorMessage = error.localizedDescription
         }
@@ -93,7 +94,9 @@ class CategoriesViewModel: ObservableObject {
     
     func handlerChoosenData(heroes: DotaHeroesModelData) {
         let item : ChoosenModelData = ChoosenModelData(categories: selectedCategories, heroes: heroes.localizedName, id: heroes.id)
-        self.choosenListView.append(item)
+        if !choosenListView.contains(item) {
+            self.choosenListView.append(item)
+        }
     }
     
     func filterCategories(with keyWord: String) {

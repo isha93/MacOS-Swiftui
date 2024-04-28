@@ -29,12 +29,12 @@ struct CategoriesListView: View {
                     .focusable()
                     .onTapGesture(count: 2) {
                         withAnimation(.bouncy) {
-                            handleCategorySelection()
+                            handleCategorySelection(index: index)
                         }
                     }
                     .onKeyPress(.return) {
                         withAnimation(.bouncy) {
-                            handleCategorySelection()
+                            handleCategorySelection(index: selectedIndexCategories ?? 0)
                         }
                         return .handled
                     }
@@ -42,6 +42,9 @@ struct CategoriesListView: View {
                     .background(index == selectedIndexCategories ? Color.blue.opacity(0.3) : Color.clear)
                     .onAppear {
                         selectedIndexCategories = 0
+                    }
+                    .onTapGesture {
+                        selectedIndexCategories = index
                     }
                 }
              
@@ -58,7 +61,7 @@ struct CategoriesListView: View {
         }
     }
     
-    func handleCategorySelection() {
+    func handleCategorySelection(index: Int) {
         withAnimation(.bouncy) {
             clickedCategories = false
             if let selectedIndex = selectedIndexCategories,

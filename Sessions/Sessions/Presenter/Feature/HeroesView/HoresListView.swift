@@ -32,19 +32,14 @@ struct HeroesListView: View {
                     selectedHeroes(direction, layoutDirection: layoutDirection)
                 })
                 .focused($heroesFocus, equals: .heroesName)
+                .onTapGesture(count: 2) {
+                    withAnimation(.bouncy) {
+                        self.handleCategorySelection(index: index)
+                    }
+                }
                 .onKeyPress(.return) {
                     withAnimation(.bouncy) {
-                        clickedHeroes = false
-                        clickedCategories = false
-                        selectionNameHeroes = ""
-                        selectionCategories = "Categories"
-                        selectionHeroes = viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
-                        heroesFocus = .choosenHeroes
-                        DispatchQueue.main.async {
-                            viewModel.handlerChoosenData(
-                                heroes: viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
-                            )
-                        }
+                        self.handleCategorySelection(index: selectedIndexHeroes ?? 0)
                     }
                     return .handled
                 }
@@ -62,6 +57,20 @@ struct HeroesListView: View {
         })
         .background(.white)
         .cornerRadius(10)
+    }
+    
+    private func handleCategorySelection(index: Int) {
+        clickedHeroes = false
+        clickedCategories = false
+        selectionNameHeroes = ""
+        selectionCategories = "Categories"
+        selectionHeroes = viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
+        heroesFocus = .choosenHeroes
+        DispatchQueue.main.async {
+            viewModel.handlerChoosenData(
+                heroes: viewModel.selectedHeroesCategories[selectedIndexHeroes ?? index]
+            )
+        }
     }
     
     private func selectedHeroes(_ direction: MoveCommandDirection, layoutDirection: LayoutDirection) {
